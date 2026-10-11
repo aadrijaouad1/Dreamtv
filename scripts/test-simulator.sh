@@ -8,8 +8,13 @@ xcrun simctl boot "$sim_id" 2>/dev/null || true
 xcrun simctl bootstatus "$sim_id" -b
 # UI test app receives --ui-testing: no production requests, no credentials.
 result="artifacts/Fullscreen-$(date +%Y%m%d-%H%M%S).xcresult"
+set +e
 xcodebuild -project AADRIPro.xcodeproj -scheme AADRIPro -configuration Debug \
   -destination "platform=iOS Simulator,id=$sim_id" -derivedDataPath build/tests \
   -resultBundlePath "$result" CODE_SIGNING_ALLOWED=NO \
   -parallel-testing-enabled NO test | tee build/simulator-tests.log
+status=${PIPESTATUS[0]}
+set -e
+xcrun xcresulttool export attachments --path "$result" --output-path artifacts/screenshots || true
 echo "Test results and screenshots: $result"
+exit "$status"

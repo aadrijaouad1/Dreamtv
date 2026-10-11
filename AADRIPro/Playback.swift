@@ -202,7 +202,6 @@ struct FullscreenPlayer: View {
                 }.padding(.horizontal, 8).foregroundColor(.white).buttonStyle(.plain)
             }
         }.background(Color.black).statusBarHidden(true).persistentSystemOverlays(.hidden)
-            .accessibilityIdentifier("fullscreenPlayer")
             .task(id: timerID) {
                 try? await Task.sleep(nanoseconds: 4_000_000_000)
                 if !Task.isCancelled { controls = false }

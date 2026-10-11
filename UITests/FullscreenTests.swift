@@ -14,7 +14,9 @@ final class FullscreenTests: XCTestCase {
         let expand = app.buttons["expandChannel"]
         XCTAssertTrue(expand.waitForExistence(timeout: 10)); expand.tap()
         let surface = app.descendants(matching: .any).matching(identifier: "videoSurface").firstMatch
-        XCTAssertTrue(surface.waitForExistence(timeout: 10))
+        let visible = surface.waitForExistence(timeout: 10)
+        if !visible { print("FULLSCREEN HIERARCHY: \(app.debugDescription)") }
+        XCTAssertTrue(visible)
         let geometry = NSPredicate { _, _ in
             let screen = app.windows.firstMatch.frame, frame = surface.frame
             return abs(frame.width - screen.width) < 3 && abs(frame.height - screen.height) < 3
