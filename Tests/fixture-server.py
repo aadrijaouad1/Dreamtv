@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlsplit, parse_qs
+from socketserver import TCPServer
 from pathlib import Path
 import json, sys, base64
 class Handler(BaseHTTPRequestHandler):
@@ -31,6 +32,12 @@ class Handler(BaseHTTPRequestHandler):
             body=json.dumps(data).encode()
         else:self.send_response(404);self.end_headers();return
         self.send_response(200);self.send_header('Content-Length',str(len(body)));self.end_headers();self.wfile.write(body)
-server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+class LocalServer(ThreadingHTTPServer):
+    def server_bind(self):
+        TCPServer.server_bind(self)
+        self.server_name = 'localhost'
+        self.server_port = self.server_address[1]
+server=LocalServer(('127.0.0.1',0),Handler)
 Path(sys.argv[1]).write_text(str(server.server_port))
+print('FIXTURE READY',server.server_port,flush=True)
 server.serve_forever()
