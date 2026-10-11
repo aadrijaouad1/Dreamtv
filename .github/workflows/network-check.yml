@@ -2,7 +2,7 @@ name: Network diagnostics
 on:
   push:
     branches: [main]
-    paths: ['.github/workflows/network-check.yml']
+    paths: ['.github/workflows/network-check.yml', 'Tests/**', 'scripts/test-network.sh', 'AADRIPro/Network.swift']
   workflow_dispatch:
 permissions:
   contents: read

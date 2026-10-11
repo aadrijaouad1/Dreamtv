@@ -14,4 +14,6 @@ for attempt in {1..50}; do
   if [[ -s "$port_file" ]]; then break; fi
   sleep 0.1
 done
-./build/network-tests "http://127.0.0.1:$(cat "$port_file")"
+fixture_url="http://127.0.0.1:$(cat "$port_file")"
+curl --fail --silent "$fixture_url/list.m3u" >/dev/null
+./build/network-tests "$fixture_url"

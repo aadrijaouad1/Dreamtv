@@ -7,6 +7,7 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *args): pass
     def do_GET(self):
         path=urlsplit(self.path)
+        print("FIXTURE",path.path,flush=True)
         if path.path=='/redirect':
             self.send_response(302);self.send_header('Location','/list.m3u');self.end_headers();return
         if path.path=='/oversize':

@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import Combine
 
 @MainActor final class AppModel: ObservableObject {
     @Published var profile = Profile()
@@ -17,6 +18,12 @@ import AVFoundation
     @Published var showEPG = false
     @Published var fullscreen = false
     let playback = Playback()
+    private var playbackObserver: AnyCancellable?
+    init() {
+        playbackObserver = playback.objectWillChange.sink { [weak self] _ in
+            self?.objectWillChange.send()
+        }
+    }
     private var vault: Vault?
     private var clockAnchor = ProcessInfo.processInfo.systemUptime
     private var timeAnchor = Date().timeIntervalSince1970
