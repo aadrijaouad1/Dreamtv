@@ -13,10 +13,18 @@
 - Inspected bundled sample media: H.264 video at 1280×720 and AAC audio, approximately 8 seconds.
 - No website registration, live account access, or production modification was performed.
 
-## Supplied but NOT executed here
+## Native Apple validation
 
-- Xcode iOS Simulator build, including native SwiftUI/UIKit/AVFoundation type-checking, linking and asset compilation.
-- XCTest UI test `FullscreenTests.testVideoCoversScreenAndReturns`. It opens the local sample, taps the actual expand button, checks the native video surface against the entire window in landscape and portrait, checks default `fill`, captures screenshots and returns to the preview. It launches the app in Debug with `--ui-testing`, without registering a production device.
+- Xcode 16.4 on macOS 15: Release iOS Simulator build succeeded for arm64 and x86_64, including native SwiftUI, UIKit, AVFoundation, Security and CryptoKit compilation/linking.
+- All 19 core and 10 loopback network checks passed on macOS.
+- Fullscreen UI test passed: expanded the sample through the real button, verified native AVPlayerLayer-backed view fills the window in landscape (874 × 402 points, origin 0,0) and portrait, confirmed default fill mode, captured both screenshots, and returned to the preview. SwiftUI accessibility frames alone clip to safe areas, so the test reads actual UIView bounds converted to window coordinates.
+- Successful run: https://github.com/aadrijaouad1/Dreamtv/actions/runs/38144194910
+- Tested source commit: `4aef970742c5e0ac686aaebc820f12533563df78`.
+- Simulator ZIP SHA-256: `3ef12be39ce10caa8645c49af52f3a3ed9a654ec0b3f3b6b87ba15fed14f51ad`.
+- Downloaded artifact checked for ZIP integrity, matching CI checksum, iPhoneSimulator platform and universal arm64/x86_64 executable.
+
+## Not verified
+
 - Native Keychain/AES-GCM persistence on iOS, actual provider playback, Appetize upload and interactive iPhone test.
 - iPhone hardware, AirPlay, audio/subtitle track switching, background transitions, account recovery and actual website activation.
 
@@ -24,4 +32,4 @@ The GitHub workflow runs core and network checks, builds the simulator ZIP, then
 
 ## Known scope
 
-This is a first native iOS port, not complete feature parity with the Windows edition. See README-AR.md for codec limitations and features not ported yet. There is no built `.app`, signed `.ipa`, Apple signing identity, or live credential in this source archive.
+This is a first native iOS port, not complete feature parity with the Windows edition. See README-AR.md for codec limitations and features not ported yet. The simulator artifact contains a compiled `.app`. It does not contain a signed device `.ipa`, Apple distribution identity, or live provider credential.
