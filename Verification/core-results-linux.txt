@@ -1,0 +1,20 @@
+PASS: UTF-8 BOM, Arabic, CRLF
+PASS: Quoted comma metadata
+PASS: Relative URL resolution
+PASS: Movie classification
+PASS: Reject HTML error page
+PASS: Reject non-network schemes
+PASS: Deduplicate stream URLs
+PASS: Flag custom HTTP headers
+PASS: Reject URL userinfo
+PASS: Preserve provider base path
+PASS: Escape query credentials
+PASS: Escape stream credentials as path segments
+PASS: Reject invalid provider IDs
+PASS: Trial expiration boundary
+PASS: Reject clock before server observation
+PASS: Paid offline grace boundary
+PASS: Revocation denies playback
+PASS: Paid subscription expiration
+PASS: 35,000 channel catalogue
+19 core checks passed

@@ -1,0 +1,50 @@
+name: Build iOS Simulator
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "AADRIPro/**"
+      - "AADRIPro.xcodeproj/**"
+      - "scripts/**"
+      - "Tests/**"
+      - "UITests/**"
+      - ".github/workflows/ios-simulator.yml"
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find project folder
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          matches = list(Path('.').glob('**/AADRIPro.xcodeproj/project.pbxproj'))
+          assert len(matches) == 1, 'Upload the extracted project files, not the source ZIP'
+          root = matches[0].parent.parent
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+              f.write('PROJECT_DIR=' + str(root) + '\n')
+          PY
+      - name: Core behavior tests
+        run: bash "$PROJECT_DIR/scripts/test-core.sh"
+      - name: Local network fixture tests
+        run: bash "$PROJECT_DIR/scripts/test-network.sh"
+      - name: Build Appetize simulator ZIP
+        run: bash "$PROJECT_DIR/scripts/build-simulator.sh"
+      - name: Full-screen UI test
+        run: bash "$PROJECT_DIR/scripts/test-simulator.sh"
+      - name: Save simulator app and test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AADRI-PRO-iOS-Simulator-and-Tests
+          path: |
+            ${{ env.PROJECT_DIR }}/artifacts/
+            ${{ env.PROJECT_DIR }}/build/*.log
+          if-no-files-found: warn
+          retention-days: 14

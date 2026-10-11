@@ -1,0 +1,11 @@
+PASS: Xtream live, movie and series catalogue
+PASS: iOS HLS live endpoint
+PASS: Series root navigation
+PASS: Episodes ordered by season and number
+PASS: EPG base64 decoding
+PASS: Redirect and relative playlist URL
+PASS: streamed response size cap
+PASS: authenticated redirect denied
+PASS: server error HTML rejected
+PASS: Website license response mapping
+10 network checks passed
