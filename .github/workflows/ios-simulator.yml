@@ -35,8 +35,11 @@ jobs:
       - name: Local network fixture tests
         run: bash "$PROJECT_DIR/scripts/test-network.sh"
       - name: Build Appetize simulator ZIP
+        id: buildapp
+        if: ${{ !cancelled() }}
         run: bash "$PROJECT_DIR/scripts/build-simulator.sh"
       - name: Full-screen UI test
+        if: ${{ !cancelled() && steps.buildapp.outcome == 'success' }}
         run: bash "$PROJECT_DIR/scripts/test-simulator.sh"
       - name: Save simulator app and test report
         if: always()

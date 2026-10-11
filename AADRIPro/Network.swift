@@ -48,7 +48,7 @@ private final class Transfer: NSObject, URLSessionDataDelegate, @unchecked Senda
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         let callback = continuation; continuation = nil
         if let failure { callback?.resume(throwing: failure) }
-        else if error != nil { callback?.resume(throwing: AppFailure("تعذر الاتصال بالخادم / Connection failed")) }
+        else if let error { callback?.resume(throwing: AppFailure("تعذر الاتصال بالخادم / Connection failed (\((error as NSError).code))")) }
         else if let finalURL { callback?.resume(returning: (bytes, finalURL)) }
         else { callback?.resume(throwing: AppFailure("Empty response")) }
         session.finishTasksAndInvalidate(); self.session = nil

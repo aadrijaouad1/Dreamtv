@@ -3,7 +3,9 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p build
 xcrun swiftc -swift-version 5 AADRIPro/Core.swift AADRIPro/Network.swift \
-  Tests/NetworkIdentity.swift Tests/NetworkTests.swift -o build/network-tests
+  Tests/NetworkIdentity.swift Tests/NetworkTests.swift \
+  -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __info_plist -Xlinker Tests/NetworkInfo.plist \
+  -o build/network-tests
 port_file=$(mktemp)
 python3 Tests/fixture-server.py "$port_file" &
 fixture_pid=$!
