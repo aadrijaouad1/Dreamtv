@@ -17,17 +17,32 @@ final class FullscreenTests: XCTestCase {
         let visible = surface.waitForExistence(timeout: 10)
         if !visible { print("FULLSCREEN HIERARCHY: \(app.debugDescription)") }
         XCTAssertTrue(visible)
-        let geometry = NSPredicate { _, _ in
-            let screen = app.windows.firstMatch.frame, frame = surface.frame
-            return abs(frame.width - screen.width) < 3 && abs(frame.height - screen.height) < 3
+        func metrics() -> [String: Any] {
+            guard let value = surface.value as? String, let data = value.data(using: .utf8),
+                  let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return [:] }
+            return result
         }
-        let landscape = NSPredicate { _, _ in geometry.evaluate(with: surface) && surface.frame.width > surface.frame.height }
+        // SwiftUI clips accessibility frames to safe areas even when the AVPlayerLayer
+        // draws underneath them. Measure the actual native UIView bounds and window.
+        let geometry = NSPredicate { _, _ in
+            let m = metrics()
+            guard let w = m["width"] as? Double, let h = m["height"] as? Double,
+                  let sw = m["windowWidth"] as? Double, let sh = m["windowHeight"] as? Double,
+                  let x = m["x"] as? Double, let y = m["y"] as? Double else { return false }
+            return abs(w - sw) < 3 && abs(h - sh) < 3 && abs(x) < 3 && abs(y) < 3
+        }
+        let landscape = NSPredicate { _, _ in
+            let m = metrics()
+            return geometry.evaluate(with: surface) && (m["width"] as? Double ?? 0) > (m["height"] as? Double ?? 0)
+        }
         expectation(for: landscape, evaluatedWith: surface)
-        waitForExpectations(timeout: 10)
-        XCTAssertEqual(surface.value as? String, "fill")
+        print("Fullscreen native geometry: \(metrics())")
+        waitForExpectations(timeout: 15)
+        XCTAssertEqual(metrics()["fit"] as? String, "fill")
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "Fullscreen-landscape"; shot.lifetime = .keepAlways; add(shot)
+        XCUIDevice.shared.orientation = .landscapeRight
         XCUIDevice.shared.orientation = .portrait
-        let portraitGeometry = NSPredicate { _, _ in geometry.evaluate(with: surface) && surface.frame.height > surface.frame.width }
+        let portraitGeometry = NSPredicate { _, _ in geometry.evaluate(with: surface) && (metrics()["height"] as? Double ?? 0) > (metrics()["width"] as? Double ?? 0) }
         expectation(for: portraitGeometry, evaluatedWith: surface); waitForExpectations(timeout: 10)
         let portrait = XCTAttachment(screenshot: app.screenshot()); portrait.name = "Fullscreen-portrait"; portrait.lifetime = .keepAlways; add(portrait)
         var close = app.buttons["exitFullscreen"]

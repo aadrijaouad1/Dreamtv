@@ -94,6 +94,19 @@ struct TrackChoice: Identifiable {
 final class VideoLayerView: UIView {
     override class var layerClass: AnyClass { AVPlayerLayer.self }
     var videoLayer: AVPlayerLayer { layer as! AVPlayerLayer }
+    var fit = "fit"
+    override var accessibilityValue: String? {
+        get {
+            let rect = convert(bounds, to: window)
+            let screen = window?.bounds ?? .zero
+            let metrics: [String: Any] = ["fit": fit, "x": rect.minX, "y": rect.minY,
+                "width": bounds.width, "height": bounds.height,
+                "windowWidth": screen.width, "windowHeight": screen.height]
+            guard let data = try? JSONSerialization.data(withJSONObject: metrics) else { return nil }
+            return String(data: data, encoding: .utf8)
+        }
+        set { }
+    }
 }
 struct VideoSurface: UIViewRepresentable {
     let player: AVPlayer
@@ -107,7 +120,7 @@ struct VideoSurface: UIViewRepresentable {
     func updateUIView(_ view: VideoLayerView, context: Context) {
         view.videoLayer.player = player
         view.videoLayer.videoGravity = fit == "fit" ? .resizeAspect : fit == "crop" ? .resizeAspectFill : .resize
-        view.accessibilityValue = fit
+        view.fit = fit
     }
     static func dismantleUIView(_ view: VideoLayerView, coordinator: ()) { view.videoLayer.player = nil }
 }
@@ -208,7 +221,12 @@ struct FullscreenPlayer: View {
             }
             .onAppear {
                 originalOrientation = activeScene?.interfaceOrientation ?? .unknown
-                UIApplication.shared.isIdleTimerDisabled = true; rotate()
+                UIApplication.shared.isIdleTimerDisabled = true
+            }
+            .task {
+                // Request rotation after the full-screen presentation transition completes.
+                try? await Task.sleep(nanoseconds: 700_000_000)
+                if !Task.isCancelled { rotate() }
             }
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
@@ -219,6 +237,11 @@ struct FullscreenPlayer: View {
     var activeScene: UIWindowScene? { UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first { $0.activationState == .foregroundActive } }
     func rotate() {
         guard let scene = activeScene else { return }
-        scene.requestGeometryUpdate(.iOS(interfaceOrientations: landscape ? .landscape : .portrait)) { _ in }
+        var controller = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        while let presented = controller?.presentedViewController { controller = presented }
+        controller?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        scene.requestGeometryUpdate(.iOS(interfaceOrientations: landscape ? .landscapeRight : .portrait)) { error in
+            print("Fullscreen rotation denied: \(error.localizedDescription)")
+        }
     }
 }
